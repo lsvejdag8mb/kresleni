@@ -9,6 +9,15 @@
         let cnv,ctx;
         let xImg = 300;
         let yImg = 200;
+        let wImg = 50;
+        let hImg = 50;
+        let rotaceImg = 0;
+        function puntik(x,y) {
+            ctx.beginPath();
+            ctx.fillStyle = "yellow";
+            ctx.arc(x, y, 2, 0, 2*Math.PI);
+            ctx.fill();
+        }
         function kresli() {
             ctx.clearRect(0,0,cnv.width,cnv.height);
 
@@ -33,8 +42,13 @@
 
             xImg = xImg -1;
             yImg = yImg -1;
-            ctx.drawImage(img, xImg, yImg, 50, 50);
-
+            rotaceImg = rotaceImg -0.05;
+            ctx.save(); //ulozi aktualni nastaveni platna
+            ctx.translate(xImg+wImg/2, yImg+hImg/2); //posunuti stredu os do stredu obrazku
+            ctx.rotate(rotaceImg); //otoceni o konkretni uhel
+            ctx.drawImage(img, -wImg/2, -hImg/2, wImg, hImg); //pozice obrazku udava jeho levy horni roh v posunutych osach
+            puntik(0,0); //vykresluje prusecik posunutych os
+            ctx.restore(); //obnovi nastaveni platna z ulozeneho
         }
         function poNacteni() {
             cnv = document.getElementById("platno");
