@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>Kreslení</title>
+    <script>
+        let img = new Image();
+        img.src = "http://dl.damto.cz/mimon.png";
+        let cnv,ctx;
+        let xImg = 300;
+        let yImg = 200;
+        function kresli() {
+            ctx.clearRect(0,0,cnv.width,cnv.height);
+
+            ctx.beginPath();
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = "red";
+            ctx.moveTo(0, 0);
+            ctx.lineTo(200, 100);
+            ctx.lineTo(200, 50);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = "green";
+            ctx.arc(100, 200, 30, 0, 2*Math.PI);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.fillStyle = "blue";
+            ctx.arc(100, 300, 50, 0, 2*Math.PI);
+            ctx.fill();
+
+            xImg = xImg -1;
+            yImg = yImg -1;
+            ctx.drawImage(img, xImg, yImg, 50, 50);
+
+        }
+        function poNacteni() {
+            cnv = document.getElementById("platno");
+            ctx = cnv.getContext("2d");
+            setInterval(kresli, 20);
+        }
+    </script>
+</head>
+<body onload="poNacteni()">
+
+<h1>Kreslení</h1>
+
+<canvas id="platno" width="600" height="400" style="background-color: gainsboro"></canvas>
+
+</body>
+</html>
