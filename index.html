@@ -35,9 +35,28 @@
             ctx.arc(100, 200, 30, 0, 2*Math.PI);
             ctx.stroke();
 
+            //pohyb
+            if (postava.moveLeft) {
+                postava.x = postava.x -4;
+            }
+            if (postava.moveRight) {
+                postava.x = postava.x +4;
+            }
+            if (postava.moveUp) {
+                postava.y = postava.y -4;
+            }
+            if (postava.moveDown) {
+                postava.y = postava.y +4;
+            }
+            //kontrola okraju
+            if (postava.x+postava.r > cnv.width) {
+                postava.x = cnv.width - postava.r;
+            }
+            //TODO...
+            //vykresleni
             ctx.beginPath();
             ctx.fillStyle = "blue";
-            ctx.arc(100, 300, 50, 0, 2*Math.PI);
+            ctx.arc(postava.x, postava.y, postava.r, 0, 2*Math.PI);
             ctx.fill();
 
             xImg = xImg -1;
@@ -50,14 +69,51 @@
             puntik(0,0); //vykresluje prusecik posunutych os
             ctx.restore(); //obnovi nastaveni platna z ulozeneho
         }
+        function onKeyDown(event) {
+            if (event.key === "ArrowUp") {
+                postava.moveUp = true;
+            }
+            if (event.key === "ArrowDown") {
+                postava.moveDown = true;
+            }
+            if (event.key === "ArrowLeft") {
+                postava.moveLeft = true;
+            }
+            if (event.key === "ArrowRight") {
+                postava.moveRight = true;
+            }
+        }
+        function onKeyUp(event) {
+            if (event.key === "ArrowUp") {
+                postava.moveUp = false;
+            }
+            if (event.key === "ArrowDown") {
+                postava.moveDown = false;
+            }
+            if (event.key === "ArrowLeft") {
+                postava.moveLeft = false;
+            }
+            if (event.key === "ArrowRight") {
+                postava.moveRight = false;
+            }
+        }
+        let postava = {};
         function poNacteni() {
+            postava.x = 500;
+            postava.y = 300;
+            postava.r = 50;
+            postava.moveUp = false;
+            postava.moveDown = false;
+            postava.moveLeft = false;
+            postava.moveRight = false;
+
             cnv = document.getElementById("platno");
             ctx = cnv.getContext("2d");
             setInterval(kresli, 20);
         }
     </script>
 </head>
-<body onload="poNacteni()">
+<body onload="poNacteni()" onkeydown="onKeyDown(event)" onkeyup="onKeyUp(event)">
 
 <h1>Kreslení</h1>
 
