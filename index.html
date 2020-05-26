@@ -29,12 +29,22 @@
             ctx.lineTo(200, 50);
             ctx.stroke();
 
+            //mic
+            mic.x = mic.x + mic.rychlostX;
+            mic.y = mic.y + mic.rychlostY;
+            //kontrola okraju
+            if (mic.x+mic.r >= cnv.width) {
+                mic.rychlostX = -1 * mic.rychlostX;
+            }
+            //TODO zbyvajici okraje
+
             ctx.beginPath();
             ctx.lineWidth = 2;
             ctx.strokeStyle = "green";
-            ctx.arc(100, 200, 30, 0, 2*Math.PI);
+            ctx.arc(mic.x, mic.y, mic.r, 0, 2*Math.PI);
             ctx.stroke();
 
+            //postava...
             //pohyb
             if (postava.moveLeft) {
                 postava.x = postava.x -4;
@@ -52,7 +62,7 @@
             if (postava.x+postava.r > cnv.width) {
                 postava.x = cnv.width - postava.r;
             }
-            //TODO...
+            //TODO zbyvajici okraje
             //vykresleni
             ctx.beginPath();
             ctx.fillStyle = "blue";
@@ -98,6 +108,7 @@
             }
         }
         let postava = {};
+        let mic = {};
         function poNacteni() {
             postava.x = 500;
             postava.y = 300;
@@ -106,6 +117,12 @@
             postava.moveDown = false;
             postava.moveLeft = false;
             postava.moveRight = false;
+
+            mic.x = 100;
+            mic.y = 200;
+            mic.r = 20;
+            mic.rychlostX = Math.trunc(16*Math.random())-8;
+            mic.rychlostY = Math.trunc(16*Math.random())-8;
 
             cnv = document.getElementById("platno");
             ctx = cnv.getContext("2d");
