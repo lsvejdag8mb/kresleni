@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Kreslení</title>
     <script>
+        const WS_HOST = "ws://" + window.location.hostname + ((window.location.port) ? ":" + window.location.port : "");
         let img = new Image();
         img.src = "http://dl.damto.cz/mimon.png";
         let cnv,ctx;
@@ -109,6 +110,7 @@
         }
         let postava = {};
         let mic = {};
+        let connection;
         function poNacteni() {
             postava.x = 500;
             postava.y = 300;
@@ -127,13 +129,26 @@
             cnv = document.getElementById("platno");
             ctx = cnv.getContext("2d");
             setInterval(kresli, 20);
+
+            connection = new WebSocket(WS_HOST);
+            connection.onmessage = e => {
+                console.log(e.data);
+            };
+            //setInterval(posliWsZpravu, 5000);
+
         }
+        function posliWsZpravu() {
+            connection.send(document.getElementById("zprava").value);
+        }
+
     </script>
 </head>
 <body onload="poNacteni()" onkeydown="onKeyDown(event)" onkeyup="onKeyUp(event)">
 
 <h1>Kreslení</h1>
 
+Zpráva: <input type="text" id="zprava"><input type="button" value="Pošli" onclick="posliWsZpravu()">
+<br>
 <canvas id="platno" width="600" height="400" style="background-color: gainsboro"></canvas>
 
 </body>
