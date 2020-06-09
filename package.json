@@ -18,6 +18,7 @@
   "keywords": [],
   "description": "",
   "dependencies": {
+    "uniqid": "^5.2.0",
     "ws": "^7.3.0"
   }
 }

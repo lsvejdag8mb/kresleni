@@ -4,46 +4,11 @@
     <meta charset="UTF-8">
     <title>Kreslení</title>
     <script>
-        const WS_HOST = "ws://" + window.location.hostname + ((window.location.port) ? ":" + window.location.port : "");
-        let img = new Image();
-        img.src = "http://dl.damto.cz/mimon.png";
+        const HOST = window.location.protocol + "//" + window.location.hostname + ((window.location.port) ? ":" + window.location.port : "");
+        const WS_HOST = HOST.replace("http://","ws://").replace("https://","wss://");
         let cnv,ctx;
-        let xImg = 300;
-        let yImg = 200;
-        let wImg = 50;
-        let hImg = 50;
-        let rotaceImg = 0;
-        function puntik(x,y) {
-            ctx.beginPath();
-            ctx.fillStyle = "yellow";
-            ctx.arc(x, y, 2, 0, 2*Math.PI);
-            ctx.fill();
-        }
         function kresli() {
             ctx.clearRect(0,0,cnv.width,cnv.height);
-
-            ctx.beginPath();
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = "red";
-            ctx.moveTo(0, 0);
-            ctx.lineTo(200, 100);
-            ctx.lineTo(200, 50);
-            ctx.stroke();
-
-            //mic
-            mic.x = mic.x + mic.rychlostX;
-            mic.y = mic.y + mic.rychlostY;
-            //kontrola okraju
-            if (mic.x+mic.r >= cnv.width) {
-                mic.rychlostX = -1 * mic.rychlostX;
-            }
-            //TODO zbyvajici okraje
-
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            ctx.strokeStyle = "green";
-            ctx.arc(mic.x, mic.y, mic.r, 0, 2*Math.PI);
-            ctx.stroke();
 
             //postava...
             //pohyb
@@ -60,25 +25,23 @@
                 postava.y = postava.y +4;
             }
             //kontrola okraju
+            if (postava.x-postava.r < 0) {
+                postava.x = postava.r;
+            }
             if (postava.x+postava.r > cnv.width) {
                 postava.x = cnv.width - postava.r;
             }
-            //TODO zbyvajici okraje
+            if (postava.y-postava.r < 0) {
+                postava.y = postava.r;
+            }
+            if (postava.y+postava.r > cnv.height) {
+                postava.y = cnv.height - postava.r;
+            }
             //vykresleni
             ctx.beginPath();
             ctx.fillStyle = "blue";
             ctx.arc(postava.x, postava.y, postava.r, 0, 2*Math.PI);
             ctx.fill();
-
-            xImg = xImg -1;
-            yImg = yImg -1;
-            rotaceImg = rotaceImg -0.05;
-            ctx.save(); //ulozi aktualni nastaveni platna
-            ctx.translate(xImg+wImg/2, yImg+hImg/2); //posunuti stredu os do stredu obrazku
-            ctx.rotate(rotaceImg); //otoceni o konkretni uhel
-            ctx.drawImage(img, -wImg/2, -hImg/2, wImg, hImg); //pozice obrazku udava jeho levy horni roh v posunutych osach
-            puntik(0,0); //vykresluje prusecik posunutych os
-            ctx.restore(); //obnovi nastaveni platna z ulozeneho
         }
         function onKeyDown(event) {
             if (event.key === "ArrowUp") {
@@ -109,36 +72,62 @@
             }
         }
         let postava = {};
-        let mic = {};
         let connection;
         function poNacteni() {
             postava.x = 500;
             postava.y = 300;
-            postava.r = 50;
+            postava.r = 10;
             postava.moveUp = false;
             postava.moveDown = false;
             postava.moveLeft = false;
             postava.moveRight = false;
 
-            mic.x = 100;
-            mic.y = 200;
-            mic.r = 20;
-            mic.rychlostX = Math.trunc(16*Math.random())-8;
-            mic.rychlostY = Math.trunc(16*Math.random())-8;
-
             cnv = document.getElementById("platno");
             ctx = cnv.getContext("2d");
-            setInterval(kresli, 20);
 
             connection = new WebSocket(WS_HOST);
             connection.onmessage = e => {
-                console.log(e.data);
+                //console.log(e.data);
+                ctx.clearRect(0,0,cnv.width,cnv.height);
+                let hraci = JSON.parse(e.data);
+                for (let hrac of hraci) {
+                    ctx.beginPath();
+                    ctx.fillStyle = hrac.barva;
+                    ctx.arc(hrac.x, hrac.y, hrac.r, 0, 2*Math.PI);
+                    ctx.fill();
+
+                    ctx.lineWidth = 1;
+                    ctx.fillStyle = "black";
+                    ctx.font = "16px Consolas";
+                    ctx.fillText(hrac.jmeno, hrac.x + hrac.r, hrac.y + hrac.r);
+                }
             };
             //setInterval(posliWsZpravu, 5000);
 
         }
-        function posliWsZpravu() {
-            connection.send(document.getElementById("zprava").value);
+        function posliPosunuti() {
+            let obj = {};
+            obj.uid = uid; //podle uid pozna server, se kterym hracem ma posunout
+            obj.up = postava.moveUp;
+            obj.down = postava.moveDown;
+            obj.left = postava.moveLeft;
+            obj.right = postava.moveRight;
+            connection.send(JSON.stringify(obj));
+        }
+        let uid,tmr;
+        function pripojHrace() {
+            let prezdivka = document.getElementById("prezdivka").value;
+            let barvaHrace = document.getElementById("barva").value;
+            let url = HOST + "/novyhrac?j="+prezdivka+"&b="+barvaHrace.substr(1); //neprenasime znak # z barvy
+            fetch(url).then(function(response) {
+                response.text().then(function(text) {
+                    let obj = JSON.parse(text);
+                    uid = obj.uid;
+                    if (!tmr) {
+                        tmr = setInterval(posliPosunuti, 10);
+                    }
+                });
+            });
         }
 
     </script>
@@ -147,7 +136,9 @@
 
 <h1>Kreslení</h1>
 
-Zpráva: <input type="text" id="zprava"><input type="button" value="Pošli" onclick="posliWsZpravu()">
+Přezdívka: <input type="text" id="prezdivka">
+<input type="color" id="barva">
+<input type="button" value="Připoj se" onclick="pripojHrace()">
 <br>
 <canvas id="platno" width="600" height="400" style="background-color: gainsboro"></canvas>
 
